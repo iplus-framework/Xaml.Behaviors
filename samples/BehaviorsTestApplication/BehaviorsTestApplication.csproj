@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IsPackable>False</IsPackable>
     <Nullable>enable</Nullable>
@@ -23,7 +23,7 @@
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'False'">
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)' == 'Debug'" />
@@ -31,11 +31,23 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'True'">
+    <Reference Include="Avalonia.Controls.DataGrid">
+      <HintPath>$(AvaloniaDataGridIncludeDir)\Avalonia.Controls.DataGrid\$(Configuration)_$(TargetFramework)\Avalonia.Controls.DataGrid.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="ReactiveGenerator">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="..\..\AvaloniaInclude.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\BuildTargets.targets"/>
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\SourceGenerators.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\ReactiveUI.props" />
 
   <ItemGroup>
     <!-- This project contains several pages using reflection based behaviors/actions. Make sure all sample types are preserved. -->
