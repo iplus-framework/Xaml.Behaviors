@@ -22,7 +22,6 @@
   <!--<Import Condition="'$(UseAvaloniaFork)' == 'true'" Project="$(AvaloniaRootDir)\build\ReferenceCoreLibraries.props"/>-->
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\BuildTargets.targets"/>
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\SourceGenerators.props" />
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\ReactiveUI.props" />
 
   <Import Project="..\..\build\SignAssembly.props" />
   <Import Project="..\..\build\SourceLink.props" />

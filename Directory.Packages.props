@@ -1,9 +1,9 @@
 ﻿<Project>
   <PropertyGroup>
-    <ManagePackageVersionsCentrally Condition="'$(UseAvaloniaFork)' == 'False'">true</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!--<AvaloniaVersion>11.3.6</AvaloniaVersion>-->
   </PropertyGroup>
-  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'False'">
+  <ItemGroup>
     <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
@@ -13,9 +13,8 @@
     <PackageVersion Include="Avalonia.Browser" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.BuildServices" Version="11.3.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageVersion Include="ReactiveGenerator" Version="0.12.0" />
     <PackageVersion Include="ReactiveUI" Version="20.4.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />

@@ -14,15 +14,16 @@
     <PackageTags>Avalonia;ReactiveUI;Behavior;Navigation;Xaml</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ReactiveUI" />
+  </ItemGroup>
   <ItemGroup Condition="'$(UseAvaloniaFork)' == 'False'">
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
-    <PackageReference Include="ReactiveUI" />
   </ItemGroup>
 
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="..\..\AvaloniaInclude.props" />
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\BuildTargets.targets"/>
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\SourceGenerators.props" />
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\ReactiveUI.props" />
 
   <!--  <Import Project="..\..\build\SignAssembly.props" />-->
   <Import Project="..\..\build\SourceLink.props" />

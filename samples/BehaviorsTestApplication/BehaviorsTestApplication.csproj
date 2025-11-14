@@ -36,6 +36,15 @@
     <Reference Include="Avalonia.Controls.DataGrid">
       <HintPath>$(AvaloniaDataGridIncludeDir)\Avalonia.Controls.DataGrid\$(Configuration)_$(TargetFramework)\Avalonia.Controls.DataGrid.dll</HintPath>
     </Reference>
+    <Reference Include="Avalonia.Fonts.Inter">
+      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Fonts.Inter\bin\$(Configuration)\$(TargetFramework)\Avalonia.Fonts.Inter.dll</HintPath>
+    </Reference>
+    <Reference Include="Avalonia.Desktop">
+      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Desktop\bin\$(Configuration)\$(TargetFramework)\Avalonia.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Avalonia.Themes.Fluent">
+      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Themes.Fluent\bin\$(Configuration)\$(TargetFramework)\Avalonia.Themes.Fluent.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ReactiveGenerator">
@@ -47,7 +56,6 @@
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="..\..\AvaloniaInclude.props" />
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\BuildTargets.targets"/>
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\SourceGenerators.props" />
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\ReactiveUI.props" />
 
   <ItemGroup>
     <!-- This project contains several pages using reflection based behaviors/actions. Make sure all sample types are preserved. -->

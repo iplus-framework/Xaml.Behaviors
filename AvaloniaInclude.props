@@ -6,7 +6,7 @@
 
     <!-- Additional Avalonia assemblies which includes Avalonia -->
     
-    <PackageReference Include="Avalonia.BuildServices" Version="11.3.1" >
+    <PackageReference Include="Avalonia.BuildServices">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -54,7 +54,6 @@
       <HintPath>$(AvaloniaNativeBuildDir)\$(Configuration)\$(TargetFramework)\Avalonia.Vulkan.dll</HintPath>
     </Reference>
 
-
     <!--<Reference Include="Avalonia.Themes.Fluent">
       <HintPath>$(AvaloniaRootDir)\src\Avalonia.Themes.Fluent\bin\$(Configuration)\$(TargetFramework)\Avalonia.Themes.Fluent.dll</HintPath>
     </Reference>
@@ -74,6 +73,10 @@
     
     <Reference Include="Avalonia.ReactiveUI">
       <HintPath>$(AvaloniaRootDir)\src\Avalonia.ReactiveUI\bin\$(Configuration)\$(TargetFramework)\Avalonia.ReactiveUI.dll</HintPath>
+    </Reference>
+
+    <Reference Include="Avalonia.Skia">
+      <HintPath>$(AvaloniaRootDir)\src\Skia\Avalonia.Skia\bin\$(Configuration)\$(TargetFramework)\Avalonia.Skia.dll</HintPath>
     </Reference>
     
     <!--<PackageReference Include="MicroCom.Runtime" Version="0.11.0" />-->
