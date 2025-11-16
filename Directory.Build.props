@@ -1,4 +1,7 @@
 ﻿<Project>
+  <!-- iPlus settings and overrides -->
+  <Import Project="../iPlus/build/Avalonia.Build.props" />
+  <!-- End iPlus settings and overrides -->
   <PropertyGroup>
     <VersionPrefix>11.3.6.6</VersionPrefix>
     <VersionSuffix></VersionSuffix>
@@ -13,17 +16,5 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <LangVersion>13</LangVersion>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <AvaloniaVersion>11.3.8</AvaloniaVersion>
-    <AvaloniaBuildFramework>net8.0</AvaloniaBuildFramework>
-    <AvaloniaRootDir>..\..\..\av_main</AvaloniaRootDir>
-    <AvaloniaNativeBuildDir>$(AvaloniaRootDir)\packages\Avalonia\bin</AvaloniaNativeBuildDir>
-    <AvaloniaMarkupBuildDir>$(AvaloniaRootDir)\src\Markup\Avalonia.Markup.Xaml.Loader\bin</AvaloniaMarkupBuildDir>
-    <AvaloniaSkiaBuildDir>$(AvaloniaRootDir)\src\Skia\Avalonia.Skia\bin</AvaloniaSkiaBuildDir>
-    <AvaloniaDataGridIncludeDir>..\..\..\Avalonia.Controls.DataGrid\artifacts\bin</AvaloniaDataGridIncludeDir>
-    <UseAvaloniaFork>true</UseAvaloniaFork>
-    <IncludeAvaloniaGenerators Condition="'$(UseAvaloniaFork)' == 'True'">true</IncludeAvaloniaGenerators>
   </PropertyGroup>
 </Project>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>$(AvaloniaBuildFramework)</TargetFramework>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IsPackable>False</IsPackable>
     <Nullable>enable</Nullable>
@@ -32,20 +32,14 @@
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
   </ItemGroup>
-  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'True'">
-    <Reference Include="Avalonia.Controls.DataGrid">
-      <HintPath>$(AvaloniaDataGridIncludeDir)\Avalonia.Controls.DataGrid\$(Configuration)_$(TargetFramework)\Avalonia.Controls.DataGrid.dll</HintPath>
-    </Reference>
-    <Reference Include="Avalonia.Fonts.Inter">
-      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Fonts.Inter\bin\$(Configuration)\$(TargetFramework)\Avalonia.Fonts.Inter.dll</HintPath>
-    </Reference>
-    <Reference Include="Avalonia.Desktop">
-      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Desktop\bin\$(Configuration)\$(TargetFramework)\Avalonia.Desktop.dll</HintPath>
-    </Reference>
-    <Reference Include="Avalonia.Themes.Fluent">
-      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Themes.Fluent\bin\$(Configuration)\$(TargetFramework)\Avalonia.Themes.Fluent.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  
+  <!-- iPlus settings and overrides -->
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaInclude.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)/build/BuildTargets.targets" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)/build/SourceGenerators.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaDataGridInclude.props" />
+  <!-- End iPlus settings and overrides -->
+  
   <ItemGroup>
     <PackageReference Include="ReactiveGenerator">
       <PrivateAssets>all</PrivateAssets>

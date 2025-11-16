@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!--<TargetFramework>net9.0</TargetFramework>-->
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>$(AvaloniaBuildFramework)</TargetFramework>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateRuntimeConfigurationFiles>True</GenerateRuntimeConfigurationFiles>
@@ -17,21 +17,12 @@
     <PackageReference Include="Avalonia.Headless.XUnit" />
   </ItemGroup>
 
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="..\..\AvaloniaInclude.props" />
-  <!--<Import Condition="'$(UseAvaloniaFork)' == 'true'" Project="$(AvaloniaRootDir)\build\ReferenceCoreLibraries.props"/>-->
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\BuildTargets.targets"/>
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\SourceGenerators.props" />
-  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'True'">
-    <Reference Include="Avalonia.Headless">
-      <HintPath>$(AvaloniaRootDir)\src\Headless\Avalonia.Headless\bin\$(Configuration)\$(TargetFramework)\Avalonia.Headless.dll</HintPath>
-    </Reference>
-    <Reference Include="Avalonia.Headless.XUnit">
-      <HintPath>$(AvaloniaRootDir)\src\Headless\Avalonia.Headless.XUnit\bin\$(Configuration)\$(TargetFramework)\Avalonia.Headless.XUnit.dll</HintPath>
-    </Reference>
-    <Reference Include="Avalonia.Themes.Fluent">
-      <HintPath>$(AvaloniaRootDir)\src\Avalonia.Themes.Fluent\bin\$(Configuration)\$(TargetFramework)\Avalonia.Themes.Fluent.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  <!-- iPlus settings and overrides -->
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaInclude.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)/build/BuildTargets.targets" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)/build/SourceGenerators.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaBaseHeadlessInclude.props" />
+  <!-- End iPlus settings and overrides -->
 
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SignAssembly.props" />
