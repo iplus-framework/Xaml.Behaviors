@@ -153,43 +153,41 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
     private void OnDragStarted()
     {
         UpdateOver(false);
+        var target = AssociatedObject;
+        if (target is null || !target.IsEffectivelyVisible)
+        {
+            UpdateWantsDrop(false);
+            return;
+        }
         var svc = ManagedDragDropService.Instance;
         var compatible = AllowDrop && Handler is not null && svc.IsDragging && string.Equals(svc.DataFormat, AcceptDataFormat, StringComparison.Ordinal);
         if (compatible)
         {
-            var target = AssociatedObject;
             try
             {
-                if (target is not null)
+                Point local = default;
+                if (TopLevel.GetTopLevel(target) is TopLevel tl)
                 {
-                    Point local = default;
-                    if (target.GetVisualRoot() is TopLevel tl)
-                    {
-                        var pTop = tl.PointToClient(svc.ScreenPosition);
-                        local = tl.TranslatePoint(pTop, target) ?? default;
-                    }
-                    var e = CreateDragEventArgs(DragDrop.DragEnterEvent, local, svc);
-                    if (e is null)
-                    {
-                        compatible = false;
-                    }
-                    else
-                    {
-                        bool valid;
-                        try
-                        {
-                            valid = Handler!.Validate(target, e, svc.Payload, Context ?? target.DataContext, null);
-                        }
-                        catch
-                        {
-                            valid = false;
-                        }
-                        compatible = valid;
-                    }
+                    var pTop = tl.PointToClient(svc.ScreenPosition);
+                    local = tl.TranslatePoint(pTop, target) ?? default;
+                }
+                var e = CreateDragEventArgs(DragDrop.DragEnterEvent, local, svc);
+                if (e is null)
+                {
+                    compatible = false;
                 }
                 else
                 {
-                    compatible = false;
+                    bool valid;
+                    try
+                    {
+                        valid = Handler!.Validate(target, e, svc.Payload, Context ?? target.DataContext, null);
+                    }
+                    catch
+                    {
+                        valid = false;
+                    }
+                    compatible = valid;
                 }
             }
             catch
@@ -206,6 +204,16 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
         var target = AssociatedObject;
         if (target is null || !AllowDrop)
             return;
+        if (!target.IsEffectivelyVisible)
+        {
+            if (_isOver)
+            {
+                UpdateOver(false);
+                InvokeHandlerLeave();
+            }
+            UpdateWantsDrop(false);
+            return;
+        }
 
         var svc = ManagedDragDropService.Instance;
         if (!svc.IsDragging || !string.Equals(svc.DataFormat, AcceptDataFormat, StringComparison.Ordinal))
@@ -218,7 +226,7 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
             return;
         }
 
-        if (target.GetVisualRoot() is not TopLevel tl)
+        if (TopLevel.GetTopLevel(target) is not TopLevel tl)
         {
             if (_isOver)
             {
@@ -250,6 +258,14 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
         var target = AssociatedObject;
         if (target is null)
             return;
+        if (!target.IsEffectivelyVisible)
+        {
+            if (_isOver)
+                InvokeHandlerLeave();
+            UpdateOver(false);
+            UpdateWantsDrop(false);
+            return;
+        }
 
         try
         {
@@ -310,11 +326,7 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
     {
         try
         {
-            var data = new DataObject();
-            if (svc.Payload is not null && svc.DataFormat is { })
-            {
-                data.Set(svc.DataFormat, svc.Payload);
-            }
+            IDataTransfer data = CreateDataTransfer(svc.Payload, svc.DataFormat);
             // Use Interactive (base for Control) as required by DragEventArgs
             var target = AssociatedObject as Interactive;
             if (target is null) return null;
@@ -329,14 +341,27 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
         }
     }
 
+    internal static IDataTransfer CreateDataTransfer(object? payload, string? format)
+    {
+        if (payload is not null && format is not null)
+        {
+            // Avalonia 12 only exposes public application-format factories for string and byte[].
+            // Preserve the managed in-process payload in a custom IDataTransfer wrapper so callers
+            // can still recover the original object instead of a stringified surrogate.
+            return ManagedPayloadDataTransfer.Create(format, payload);
+        }
+
+        return new DataTransfer();
+    }
+
     private void InvokeHandlerEnter()
     {
         var handler = Handler;
         var target = AssociatedObject;
         var svc = ManagedDragDropService.Instance;
-        if (handler is null || target is null || !AllowDrop || !svc.IsDragging || !string.Equals(svc.DataFormat, AcceptDataFormat, StringComparison.Ordinal))
+        if (handler is null || target is null || !target.IsEffectivelyVisible || !AllowDrop || !svc.IsDragging || !string.Equals(svc.DataFormat, AcceptDataFormat, StringComparison.Ordinal))
             return;
-        var tl = target.GetVisualRoot() as TopLevel;
+        var tl = TopLevel.GetTopLevel(target);
         if (tl is null) return;
         var pTop = tl.PointToClient(svc.ScreenPosition);
         var pLocal = tl.TranslatePoint(pTop, target) ?? default;
@@ -349,7 +374,7 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
     {
         var handler = Handler;
         var target = AssociatedObject;
-        if (handler is null || target is null)
+        if (handler is null || target is null || !target.IsEffectivelyVisible)
             return;
         var e = CreateDragEventArgs(DragDrop.DragOverEvent, localPosition, svc);
         if (e is not null)
@@ -360,9 +385,9 @@ public class ManagedContextDropBehavior : StyledElementBehavior<Control>
     {
         var handler = Handler;
         var target = AssociatedObject;
-        if (handler is null || target is null || !_isOver)
+        if (handler is null || target is null || !target.IsEffectivelyVisible || !_isOver)
             return;
-        var tl = target.GetVisualRoot() as TopLevel;
+        var tl = TopLevel.GetTopLevel(target);
         if (tl is null) return;
         var pTop = tl.PointToClient(svc.ScreenPosition);
         var pLocal = tl.TranslatePoint(pTop, target) ?? default;

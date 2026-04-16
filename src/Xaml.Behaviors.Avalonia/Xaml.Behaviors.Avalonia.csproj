@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--<TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>-->
+    <!--<TargetFrameworks>net8.0;net10.0</TargetFrameworks>-->
     <TargetFrameworks>$(AvaloniaBuildFramework)</TargetFrameworks>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <Nullable>enable</Nullable>
@@ -26,6 +26,10 @@
   <Import Project="..\..\build\SourceLink.props" />
   <Import Project="..\..\build\TrimmingEnable.targets" />
 
+  <PropertyGroup>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Xaml.Behaviors.Interactivity\Xaml.Behaviors.Interactivity.csproj" />
     <ProjectReference Include="..\Xaml.Behaviors.Interactions\Xaml.Behaviors.Interactions.csproj" />
@@ -34,6 +38,9 @@
     <ProjectReference Include="..\Xaml.Behaviors.Interactions.Draggable\Xaml.Behaviors.Interactions.Draggable.csproj" />
     <ProjectReference Include="..\Xaml.Behaviors.Interactions.Events\Xaml.Behaviors.Interactions.Events.csproj" />
     <ProjectReference Include="..\Xaml.Behaviors.Interactions.Responsive\Xaml.Behaviors.Interactions.Responsive.csproj" />
+    <ProjectReference Include="..\Xaml.Behaviors.SourceGenerators\Xaml.Behaviors.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

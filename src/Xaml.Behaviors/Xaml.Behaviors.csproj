@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--<TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>-->
+    <!--<TargetFrameworks>net8.0;net10.0</TargetFrameworks>-->
     <TargetFrameworks>$(AvaloniaBuildFramework)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -25,6 +25,11 @@
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaInclude.props" />
   <!-- End iPlus settings and overrides -->
 
+  <ItemGroup>
+    <ProjectReference Include="..\Xaml.Behaviors.SourceGenerators\Xaml.Behaviors.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
 
   <Import Project="..\..\build\SignAssembly.props" />
   <Import Project="..\..\build\SourceLink.props" />

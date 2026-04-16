@@ -16,7 +16,7 @@ namespace Avalonia.Xaml.Interactions.DragAndDrop;
 public abstract class ContextDragBehaviorBase : StyledElementBehavior<Control>
 {
     private Point _dragStartPoint;
-    private PointerEventArgs? _triggerEvent;
+    private PointerPressedEventArgs? _triggerEvent;
     private bool _lock;
     private bool _captured;
 
@@ -101,10 +101,15 @@ public abstract class ContextDragBehaviorBase : StyledElementBehavior<Control>
     /// <param name="context"></param>
     protected abstract void OnAfterDragDrop(object? sender, PointerEventArgs e, object? context);
 
-    private async Task DoDragDrop(PointerEventArgs triggerEvent, object? value)
+    private async Task DoDragDrop(PointerPressedEventArgs triggerEvent, object? value)
     {
-        var data = new DataObject();
-        data.Set(ContextDropBehaviorBase.DataFormat, value!);
+        var data = new DataTransfer();
+        var contextKey = DragDropContextStore.Add(value);
+
+        if (contextKey is not null)
+        {
+            data.Add(DataTransferItem.Create(ContextDropBehaviorBase.ContextDataTransferFormat, contextKey));
+        }
 
         var effect = DragDropEffects.None;
 
@@ -125,7 +130,14 @@ public abstract class ContextDragBehaviorBase : StyledElementBehavior<Control>
             effect |= DragDropEffects.Move;
         }
 
-        await DragDrop.DoDragDrop(triggerEvent, data, effect);
+        try
+        {
+            await DragDrop.DoDragDropAsync(triggerEvent, data, effect);
+        }
+        finally
+        {
+            DragDropContextStore.Remove(contextKey);
+        }
     }
 
     private void Released()
@@ -137,16 +149,17 @@ public abstract class ContextDragBehaviorBase : StyledElementBehavior<Control>
     private void AssociatedObject_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var properties = e.GetCurrentPoint(AssociatedObject).Properties;
-        if (properties.IsLeftButtonPressed)
+        if (properties.IsLeftButtonPressed && IsEnabled)
         {
             if (e.Source is Control control
                 && AssociatedObject?.DataContext == control.DataContext)
             {
-                if ((control as ISelectable
+                if ((e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Meta | KeyModifiers.Shift)) == 0
+                    && ((control as ISelectable
                     ?? control.Parent as ISelectable
                     ?? control.FindLogicalAncestorOfType<ISelectable>())
                         ?.IsSelected
-                    ?? false)
+                    ?? false))
                 {
                     e.Handled = true; //avoid deselection on drag
                 }
@@ -179,7 +192,7 @@ public abstract class ContextDragBehaviorBase : StyledElementBehavior<Control>
     {
         var properties = e.GetCurrentPoint(AssociatedObject).Properties;
         if (_captured
-            && properties.IsLeftButtonPressed &&
+            && properties.IsLeftButtonPressed && IsEnabled &&
             _triggerEvent is not null)
         {
             var point = e.GetPosition(null);

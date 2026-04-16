@@ -1,7 +1,7 @@
 ﻿using System;
 using Avalonia;
-using Avalonia.ReactiveUI;
 using Avalonia.Xaml.Interactivity;
+using ReactiveUI.Avalonia;
 
 namespace BehaviorsTestApplication;
 
@@ -20,7 +20,7 @@ class Program
         return AppBuilder.Configure<App>()
             .WithInterFont()
             .UsePlatformDetect()
-            .UseReactiveUI()
+            .UseReactiveUI(_ => { })
             .LogToTrace();
     }
 }

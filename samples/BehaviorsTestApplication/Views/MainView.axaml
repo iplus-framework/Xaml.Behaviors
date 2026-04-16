@@ -14,7 +14,7 @@
   </UserControl.Styles>
   <DockPanel>
     <TextBox x:Name="SearchBox"
-             Watermark="Search pages..."
+             PlaceholderText="Search pages..."
              Margin="0,0,0,8"
              DockPanel.Dock="Top">
       <Interaction.Behaviors>
@@ -33,8 +33,74 @@
                                              EnableSorting="True"
                                              SortOrder="Ascending" />
       </Interaction.Behaviors>
+      <TabItem Header="SelectAllOnFocusBehavior">
+        <pages:SelectAllOnFocusBehaviorView />
+      </TabItem>
+      <TabItem Header="FocusNextElementAction">
+        <pages:FocusNextElementActionView />
+      </TabItem>
+      <TabItem Header="WindowDragMoveBehavior">
+        <pages:WindowDragMoveBehaviorView />
+      </TabItem>
+      <TabItem Header="TiltEffectBehavior">
+        <pages:TiltEffectBehaviorView />
+      </TabItem>
+      <TabItem Header="OrbitEffectBehavior">
+        <pages:OrbitEffectBehaviorView />
+      </TabItem>
+      <TabItem Header="ParallaxBehavior">
+        <pages:ParallaxBehaviorView />
+      </TabItem>
+      <TabItem Header="ConditionalAction">
+        <pages:ConditionalActionView />
+      </TabItem>
+      <TabItem Header="SwitchCaseAction">
+        <pages:SwitchCaseActionView />
+      </TabItem>
+      <TabItem Header="SwitchCaseBehavior">
+        <pages:SwitchCaseBehaviorView />
+      </TabItem>
+      <TabItem Header="ConditionalBehavior">
+        <pages:ConditionalBehaviorView />
+      </TabItem>
+      <TabItem Header="LoseFocusOnEnterBehavior">
+        <pages:LoseFocusOnEnterBehaviorView />
+      </TabItem>
+      <TabItem Header="AutoScrollToBottomBehavior">
+        <pages:AutoScrollToBottomBehaviorView />
+      </TabItem>
       <TabItem Header="CallMethodAction">
         <pages:CallMethodActionView />
+      </TabItem>
+      <TabItem Header="Debounce &amp; Throttle">
+        <pages:DebounceThrottleActionView />
+      </TabItem>
+      <TabItem Header="ObservableStreamBehavior">
+        <pages:ObservableStreamBehaviorView />
+      </TabItem>
+      <TabItem Header="AsyncActionGroup">
+        <pages:AsyncActionGroupView />
+      </TabItem>
+      <TabItem Header="FocusTrapBehavior">
+        <pages:FocusTrapBehaviorView />
+      </TabItem>
+      <TabItem Header="ScreenReaderAnnounceAction">
+        <pages:ScreenReaderAnnounceActionView />
+      </TabItem>
+      <TabItem Header="GlobalHotkeyBehavior">
+        <pages:GlobalHotkeyBehaviorView />
+      </TabItem>
+      <TabItem Header="VisualDebugBehavior">
+        <pages:VisualDebugBehaviorView />
+      </TabItem>
+      <TabItem Header="LogAction">
+        <pages:LogActionView />
+      </TabItem>
+      <TabItem Header="NetworkStatusTrigger">
+        <pages:NetworkStatusTriggerView />
+      </TabItem>
+      <TabItem Header="ClipboardMonitorBehavior">
+        <pages:ClipboardMonitorBehaviorView />
       </TabItem>
       <TabItem Header="ChangePropertyAction">
         <pages:ChangePropertyActionView />
@@ -44,6 +110,9 @@
       </TabItem>
       <TabItem Header="DataTriggerBehavior Advanced">
         <pages:DataTriggerBehaviorAdvancedView />
+      </TabItem>
+      <TabItem Header="MultiDataTriggerBehavior">
+        <pages:MultiDataTriggerBehaviorView />
       </TabItem>
       <TabItem Header="BindingTriggerBehavior">
         <pages:BindingTriggerBehaviorView />
@@ -134,6 +203,9 @@
       </TabItem>
       <TabItem Header="ButtonClickEventTriggerBehavior">
         <pages:ButtonClickEventTriggerBehaviorView />
+      </TabItem>
+      <TabItem Header="ClickEventTrigger">
+        <pages:ClickEventTriggerView />
       </TabItem>
       <TabItem Header="Advanced Behavior">
         <pages:AdvancedView />
@@ -632,6 +704,33 @@
       </TabItem>
       <TabItem Header="UnloadedTrigger">
         <pages:UnloadedTriggerView />
+      </TabItem>
+      <TabItem Header="FileSystem">
+        <pages:FileSystemView />
+      </TabItem>
+      <TabItem Header="Network">
+        <pages:NetworkView />
+      </TabItem>
+      <TabItem Header="ToggleClassAction">
+        <pages:ToggleClassActionView />
+      </TabItem>
+      <TabItem Header="LaunchUriAction">
+        <pages:LaunchUriActionView />
+      </TabItem>
+      <TabItem Header="ScreenshotAction">
+        <pages:ScreenshotActionView />
+      </TabItem>
+      <TabItem Header="ScrollToControlAction">
+        <pages:ScrollToControlActionView />
+      </TabItem>
+      <TabItem Header="ConsoleBeepAction">
+        <pages:ConsoleBeepActionView />
+      </TabItem>
+      <TabItem Header="BreakAction">
+        <pages:BreakActionView />
+      </TabItem>
+      <TabItem Header="InactivityTrigger">
+        <pages:InactivityTriggerView />
       </TabItem>
     </SingleSelectionTabControl>
   </DockPanel>
