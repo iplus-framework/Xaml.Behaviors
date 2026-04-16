@@ -1,0 +1,48 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/build/">
+    <File Path=".editorconfig" />
+    <File Path="AvaloniaInclude.props" />
+    <File Path="azure-pipelines.yml" />
+    <File Path="build.ps1" />
+    <File Path="build.sh" />
+    <File Path="build/behaviors.public.snk" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/build/git/">
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/build/github/">
+    <File Path=".github/workflows/build.yml" />
+  </Folder>
+  <Folder Name="/build/nuget/">
+    <File Path="NuGet.Config" />
+  </Folder>
+  <Folder Name="/build/props/">
+    <File Path="build/SignAssembly.props" />
+    <File Path="build/SourceLink.props" />
+    <File Path="build/TrimmingEnable.targets" />
+    <File Path="build/XUnit.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Xaml.Behaviors.Avalonia/Xaml.Behaviors.Avalonia.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.Custom/Xaml.Behaviors.Interactions.Custom.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.DragAndDrop.DataGrid/Xaml.Behaviors.Interactions.DragAndDrop.DataGrid.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.DragAndDrop/Xaml.Behaviors.Interactions.DragAndDrop.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.Draggable/Xaml.Behaviors.Interactions.Draggable.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.Events/Xaml.Behaviors.Interactions.Events.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.ReactiveUI/Xaml.Behaviors.Interactions.ReactiveUI.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.Responsive/Xaml.Behaviors.Interactions.Responsive.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions.Scripting/Xaml.Behaviors.Interactions.Scripting.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactions/Xaml.Behaviors.Interactions.csproj" />
+    <Project Path="src/Xaml.Behaviors.Interactivity/Xaml.Behaviors.Interactivity.csproj" />
+    <Project Path="src/Xaml.Behaviors/Xaml.Behaviors.csproj" />
+  </Folder>
+</Solution>
