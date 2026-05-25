@@ -16,7 +16,24 @@ internal static class ComparisonConditionTypeHelper
             if (rightOperand is string rightOperandString)
             {
                 var leftOperandType = leftOperand.GetType();
-                var convertedRightOperand = TypeConverterHelper.Convert(rightOperandString, leftOperandType);
+                object? convertedRightOperand = null;
+                try
+                {
+                    convertedRightOperand = TypeConverterHelper.Convert(rightOperandString, leftOperandType);
+                }
+                catch (FormatException)
+                {
+                    // Keep original rightOperand and let comparable evaluation decide.
+                }
+                catch (InvalidCastException)
+                {
+                    // Keep original rightOperand and let comparable evaluation decide.
+                }
+                catch (NotSupportedException)
+                {
+                    // Keep original rightOperand and let comparable evaluation decide.
+                }
+
                 if (convertedRightOperand is not null)
                 {
                     rightOperand = convertedRightOperand;
@@ -82,13 +99,30 @@ internal static class ComparisonConditionTypeHelper
         {
             // InvalidCastException: Convert.ChangeType(4.0d, typeof(Rectangle), ...);
         }
+        catch (NotSupportedException)
+        {
+            // NotSupportedException can occur for custom non-convertible destination types.
+        }
 
         if (convertedOperand is null)
         {
             return operatorType == ComparisonConditionType.NotEqual;
         }
 
-        var comparison = leftOperand.CompareTo((IComparable)convertedOperand);
+        int comparison;
+        try
+        {
+            comparison = leftOperand.CompareTo((IComparable)convertedOperand);
+        }
+        catch (ArgumentException)
+        {
+            return operatorType == ComparisonConditionType.NotEqual;
+        }
+        catch (InvalidCastException)
+        {
+            return operatorType == ComparisonConditionType.NotEqual;
+        }
+
         return operatorType switch
         {
             ComparisonConditionType.Equal => comparison == 0,
