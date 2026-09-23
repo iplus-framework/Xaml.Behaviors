@@ -14,14 +14,17 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Skia" />
-    <PackageReference Include="Avalonia.HarfBuzz" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Headless.XUnit" />
+    <PackageReference Include="Avalonia.HarfBuzz" />
+  </ItemGroup>
+  <ItemGroup>
   </ItemGroup>
 
   <!-- iPlus settings and overrides -->
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaInclude.props" />
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaBaseHeadlessInclude.props" />
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaBaseHarfBuzzInclude.props" />
   <!-- End iPlus settings and overrides -->
 
   <ItemGroup>

@@ -5,6 +5,7 @@
     <TargetFramework>$(AvaloniaBuildFramework)</TargetFramework>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IsPackable>False</IsPackable>
+    <IsAvaloniaUIProject>true</IsAvaloniaUIProject>
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
   </PropertyGroup>
@@ -33,24 +34,28 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="ReactiveUI.Avalonia" />
   </ItemGroup>
   
   <!-- iPlus settings and overrides -->
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaInclude.props" />
   <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="../../../iPlus/build/AvaloniaDataGridInclude.props" />
+  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'True'">
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="ReactiveUI.Avalonia" />    
+    <!-- <Reference Include="ReactiveUI.Avalonia" Condition="Exists('$(PkgReactiveUI_Avalonia)/lib/net10.0/ReactiveUI.Avalonia.dll')">
+      <HintPath>$(PkgReactiveUI_Avalonia)/lib/net10.0/ReactiveUI.Avalonia.dll</HintPath>
+    </Reference> -->
+  </ItemGroup>
   <!-- End iPlus settings and overrides -->
   
   <ItemGroup>
+    <PackageReference Include="ReactiveUI"  />
     <PackageReference Include="ReactiveGenerator">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ReactiveUI.Avalonia" />
   </ItemGroup>
-
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="..\..\AvaloniaInclude.props" />
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\BuildTargets.targets"/>
-  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="$(AvaloniaRootDir)\build\SourceGenerators.props" />
 
   <ItemGroup>
     <!-- This project contains several pages using reflection based behaviors/actions. Make sure all sample types are preserved. -->
