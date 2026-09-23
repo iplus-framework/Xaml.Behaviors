@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Wiesław Šoltés. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
@@ -14,6 +16,8 @@ public class DataTriggerBehavior : StyledElementTrigger
 {
     private bool _isConditionMet;
     private bool _hasConditionState;
+    private readonly List<IReversibleAction> _appliedActions = [];
+    private ActionCollection? _subscribedActions;
 
     /// <summary>
     /// Identifies the <seealso cref="Binding"/> avalonia property.
@@ -98,8 +102,39 @@ public class DataTriggerBehavior : StyledElementTrigger
 
         if (change.Property == RevertOnFalseProperty)
         {
+            if (change.GetOldValue<bool>() && !change.GetNewValue<bool>())
+            {
+                RevertActions(change);
+            }
+
             _hasConditionState = false;
             OnValueChanged(change);
+        }
+
+        if (change.Property == IsEnabledProperty && RevertOnFalse)
+        {
+            var isEnabled = change.GetNewValue<bool>();
+            if (!isEnabled)
+            {
+                RevertActions(change);
+            }
+
+            _hasConditionState = false;
+            if (isEnabled)
+            {
+                OnValueChanged(change);
+            }
+        }
+
+        if (change.Property == ActionsProperty && AssociatedObject is not null)
+        {
+            UpdateActionSubscription(change.GetNewValue<ActionCollection?>());
+            if (RevertOnFalse)
+            {
+                RevertActions(change);
+                _hasConditionState = false;
+                OnValueChanged(change);
+            }
         }
     }
 
@@ -109,6 +144,26 @@ public class DataTriggerBehavior : StyledElementTrigger
         base.OnInitializedEvent();
 
         Execute(parameter: null);
+    }
+
+    /// <inheritdoc />
+    protected override void OnAttached()
+    {
+        base.OnAttached();
+        UpdateActionSubscription(Actions);
+    }
+
+    /// <inheritdoc />
+    protected override void OnDetaching()
+    {
+        if (RevertOnFalse)
+        {
+            RevertActions(parameter: null);
+        }
+
+        _hasConditionState = false;
+        UpdateActionSubscription(actions: null);
+        base.OnDetaching();
     }
 
     private void OnValueChanged(AvaloniaPropertyChangedEventArgs args)
@@ -137,11 +192,22 @@ public class DataTriggerBehavior : StyledElementTrigger
         }
 
         var binding = Binding;
+        if (!IsSet(BindingProperty) || Equals(binding, AvaloniaProperty.UnsetValue))
+        {
+            return;
+        }
+
+        if (binding is null &&
+            ComparisonCondition is not ComparisonConditionType.Equal and
+            not ComparisonConditionType.NotEqual)
+        {
+            return;
+        }
 
         if (!RevertOnFalse)
         {
             // Preserve legacy behavior: execute whenever condition evaluates true.
-            if (binding is not null && ComparisonConditionTypeHelper.Compare(binding, ComparisonCondition, Value))
+            if (ComparisonConditionTypeHelper.Compare(binding, ComparisonCondition, Value))
             {
                 Interaction.ExecuteActions(AssociatedObject, Actions, parameter);
             }
@@ -149,9 +215,7 @@ public class DataTriggerBehavior : StyledElementTrigger
             return;
         }
 
-        var isConditionMet = binding is not null &&
-                             !Equals(binding, AvaloniaProperty.UnsetValue) &&
-                             ComparisonConditionTypeHelper.Compare(binding, ComparisonCondition, Value);
+        var isConditionMet = ComparisonConditionTypeHelper.Compare(binding, ComparisonCondition, Value);
 
         if (!_hasConditionState)
         {
@@ -160,7 +224,7 @@ public class DataTriggerBehavior : StyledElementTrigger
 
             if (isConditionMet)
             {
-                Interaction.ExecuteActions(AssociatedObject, Actions, parameter);
+                ApplyActions(parameter);
             }
 
             return;
@@ -175,7 +239,7 @@ public class DataTriggerBehavior : StyledElementTrigger
 
         if (isConditionMet)
         {
-            Interaction.ExecuteActions(AssociatedObject, Actions, parameter);
+            ApplyActions(parameter);
             return;
         }
 
@@ -184,17 +248,48 @@ public class DataTriggerBehavior : StyledElementTrigger
 
     private void RevertActions(object? parameter)
     {
-        if (AssociatedObject is null || Actions is null)
+        if (AssociatedObject is null)
         {
             return;
         }
 
-        foreach (var avaloniaObject in Actions)
+        for (var index = _appliedActions.Count - 1; index >= 0; index--)
         {
-            if (avaloniaObject is IReversibleAction reversibleAction)
-            {
-                reversibleAction.Revert(AssociatedObject, parameter);
-            }
+            _appliedActions[index].Revert(AssociatedObject, parameter);
         }
+
+        _appliedActions.Clear();
+    }
+
+    private void ApplyActions(object? parameter)
+    {
+        _appliedActions.Clear();
+        _appliedActions.AddRange(ReversibleActionExecution.Execute(AssociatedObject, Actions, parameter));
+    }
+
+    private void UpdateActionSubscription(ActionCollection? actions)
+    {
+        if (_subscribedActions is not null)
+        {
+            _subscribedActions.CollectionChanged -= ActionsCollectionChanged;
+        }
+
+        _subscribedActions = actions;
+        if (_subscribedActions is not null)
+        {
+            _subscribedActions.CollectionChanged += ActionsCollectionChanged;
+        }
+    }
+
+    private void ActionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
+    {
+        if (!RevertOnFalse || AssociatedObject is null)
+        {
+            return;
+        }
+
+        RevertActions(eventArgs);
+        _hasConditionState = false;
+        Dispatcher.UIThread.Post(() => Execute(eventArgs));
     }
 }

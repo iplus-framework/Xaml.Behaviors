@@ -21,17 +21,9 @@ internal static class ComparisonConditionTypeHelper
                 {
                     convertedRightOperand = TypeConverterHelper.Convert(rightOperandString, leftOperandType);
                 }
-                catch (FormatException)
+                catch (Exception exception) when (IsConversionException(exception))
                 {
-                    // Keep original rightOperand and let comparable evaluation decide.
-                }
-                catch (InvalidCastException)
-                {
-                    // Keep original rightOperand and let comparable evaluation decide.
-                }
-                catch (NotSupportedException)
-                {
-                    // Keep original rightOperand and let comparable evaluation decide.
+                    // Keep the original operand so comparable evaluation can use non-equal semantics.
                 }
 
                 if (convertedRightOperand is not null)
@@ -91,13 +83,9 @@ internal static class ComparisonConditionTypeHelper
         {
             convertedOperand = Convert.ChangeType(rightOperand, leftOperand.GetType(), CultureInfo.CurrentCulture);
         }
-        catch (FormatException)
+        catch (Exception exception) when (IsConversionException(exception))
         {
-            // FormatException: Convert.ChangeType("hello", typeof(double), ...);
-        }
-        catch (InvalidCastException)
-        {
-            // InvalidCastException: Convert.ChangeType(4.0d, typeof(Rectangle), ...);
+            // The operands cannot be converted to a common comparable type.
         }
         catch (NotSupportedException)
         {
@@ -106,7 +94,7 @@ internal static class ComparisonConditionTypeHelper
 
         if (convertedOperand is null)
         {
-            return operatorType == ComparisonConditionType.NotEqual;
+            return IsNonEqualResult(operatorType);
         }
 
         int comparison;
@@ -114,13 +102,9 @@ internal static class ComparisonConditionTypeHelper
         {
             comparison = leftOperand.CompareTo((IComparable)convertedOperand);
         }
-        catch (ArgumentException)
+        catch (Exception exception) when (exception is ArgumentException or InvalidCastException)
         {
-            return operatorType == ComparisonConditionType.NotEqual;
-        }
-        catch (InvalidCastException)
-        {
-            return operatorType == ComparisonConditionType.NotEqual;
+            return IsNonEqualResult(operatorType);
         }
 
         return operatorType switch
@@ -133,5 +117,18 @@ internal static class ComparisonConditionTypeHelper
             ComparisonConditionType.GreaterThanOrEqual => comparison >= 0,
             _ => false
         };
+    }
+
+    private static bool IsConversionException(Exception exception)
+    {
+        return exception is FormatException
+            or InvalidCastException
+            or NotSupportedException
+            or OverflowException;
+    }
+
+    private static bool IsNonEqualResult(ComparisonConditionType operatorType)
+    {
+        return operatorType == ComparisonConditionType.NotEqual;
     }
 }

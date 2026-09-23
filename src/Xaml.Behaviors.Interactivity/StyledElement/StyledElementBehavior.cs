@@ -4,8 +4,8 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Reactive;
-using Avalonia.Threading;
 
 namespace Avalonia.Xaml.Interactivity;
 
@@ -15,6 +15,10 @@ namespace Avalonia.Xaml.Interactivity;
 public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehaviorEventsHandler
 {
     private IDisposable? _dataContextDisposable;
+    private bool _isAttachedToLogicalTree;
+    private bool _isAttachedToVisualTree;
+    private bool _isInitializedNotified;
+    private bool _isLoaded;
 
     /// <summary>
     /// Identifies the <seealso cref="IsEnabled"/> avalonia property.
@@ -80,7 +84,17 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
     public void Detach()
     {
         OnDetaching();
+
+        if (Parent is not null || TemplatedParent is not null)
+        {
+            DetachBehaviorFromLogicalTree();
+        }
+
         _dataContextDisposable?.Dispose();
+        _isAttachedToLogicalTree = false;
+        _isAttachedToVisualTree = false;
+        _isInitializedNotified = false;
+        _isLoaded = false;
         AssociatedObject = null;
     }
 
@@ -106,6 +120,12 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
 
     void IBehaviorEventsHandler.AttachedToVisualTreeEventHandler()
     {
+        if (_isAttachedToVisualTree)
+        {
+            return;
+        }
+
+        _isAttachedToVisualTree = true;
         AttachBehaviorToLogicalTree();
 
         OnAttachedToVisualTree();
@@ -113,13 +133,33 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
 
     void IBehaviorEventsHandler.DetachedFromVisualTreeEventHandler()
     {
-        DetachBehaviorFromLogicalTree();
+        if (!_isAttachedToVisualTree)
+        {
+            return;
+        }
 
-        OnDetachedFromVisualTree();
+        _isAttachedToVisualTree = false;
+        try
+        {
+            OnDetachedFromVisualTree();
+        }
+        finally
+        {
+            if (AssociatedObject is not TopLevel)
+            {
+                DetachBehaviorFromLogicalTree();
+            }
+        }
     }
 
     void IBehaviorEventsHandler.AttachedToLogicalTreeEventHandler()
     {
+        if (_isAttachedToLogicalTree)
+        {
+            return;
+        }
+
+        _isAttachedToLogicalTree = true;
         AttachBehaviorToLogicalTree();
 
         OnAttachedToLogicalTree();
@@ -127,17 +167,55 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
 
     void IBehaviorEventsHandler.DetachedFromLogicalTreeEventHandler()
     {
-        DetachBehaviorFromLogicalTree();
+        if (!_isAttachedToLogicalTree)
+        {
+            return;
+        }
 
-        OnDetachedFromLogicalTree();
+        _isAttachedToLogicalTree = false;
+        try
+        {
+            OnDetachedFromLogicalTree();
+        }
+        finally
+        {
+            if (AssociatedObject is not TopLevel)
+            {
+                DetachBehaviorFromLogicalTree();
+            }
+        }
     }
 
-    void IBehaviorEventsHandler.LoadedEventHandler() => OnLoaded();
+    void IBehaviorEventsHandler.LoadedEventHandler()
+    {
+        if (_isLoaded)
+        {
+            return;
+        }
 
-    void IBehaviorEventsHandler.UnloadedEventHandler() => OnUnloaded();
+        _isLoaded = true;
+        OnLoaded();
+    }
+
+    void IBehaviorEventsHandler.UnloadedEventHandler()
+    {
+        if (!_isLoaded)
+        {
+            return;
+        }
+
+        _isLoaded = false;
+        OnUnloaded();
+    }
 
     void IBehaviorEventsHandler.InitializedEventHandler()
     {
+        if (_isInitializedNotified)
+        {
+            return;
+        }
+
+        _isInitializedNotified = true;
         Initialize();
 
         OnInitializedEvent();
@@ -264,16 +342,20 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
             parent = topLevel;
             templatedParent = topLevel.TemplatedParent;
         }
+        else if (AssociatedObject is FlyoutBase { Target: { } target })
+        {
+            parent = target;
+            templatedParent = target.TemplatedParent;
+        }
+        else if (AssociatedObject is StyledElement styledElement && styledElement.Parent is not null)
+        {
+            parent = styledElement;
+            templatedParent = styledElement.TemplatedParent;
+        }
 
         if (parent is null)
         {
-            if (AssociatedObject is not StyledElement styledElement || styledElement.Parent is null)
-            {
-                return;
-            }
-
-            parent = styledElement;
-            templatedParent = styledElement.TemplatedParent;
+            return;
         }
 
         // Required for $parent binding in XAML
@@ -288,17 +370,12 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
 
     internal virtual void DetachBehaviorFromLogicalTree()
     {
-#if false
-        Dispatcher.UIThread.Post(() =>
-        {
-            ((ISetLogicalParent)this).SetParent(null);
+        ((ISetLogicalParent)this).SetParent(null);
 
-            if (AssociatedObject is StyledElement { TemplatedParent: not null } or TopLevel)
-            {
-                TemplatedParentHelper.SetTemplatedParent(this, null);
-            }
-        });
-#endif
+        if (TemplatedParent is not null)
+        {
+            TemplatedParentHelper.SetTemplatedParent(this, null);
+        }
     }
 
     private IDisposable? SynchronizeDataContext(AvaloniaObject associatedObject)
@@ -317,6 +394,46 @@ public abstract class StyledElementBehavior : StyledElement, IBehavior, IBehavio
                 {
                     SetCurrentValue(DataContextProperty, x);
                 }));
+        }
+
+        if (associatedObject is FlyoutBase flyout)
+        {
+            IDisposable? targetDataContextSubscription = null;
+
+            void TargetChanged(Control? target)
+            {
+                targetDataContextSubscription?.Dispose();
+                targetDataContextSubscription = null;
+
+                if (Parent is not null || TemplatedParent is not null)
+                {
+                    DetachBehaviorFromLogicalTree();
+                }
+
+                if (target is null)
+                {
+                    SetCurrentValue(DataContextProperty, null);
+                    return;
+                }
+
+                AttachBehaviorToLogicalTree();
+                targetDataContextSubscription = target
+                    .GetObservable(DataContextProperty)
+                    .Subscribe(new AnonymousObserver<object?>(x =>
+                    {
+                        SetCurrentValue(DataContextProperty, x);
+                    }));
+            }
+
+            var targetSubscription = flyout
+                .GetObservable(FlyoutBase.TargetProperty)
+                .Subscribe(new AnonymousObserver<Control?>(TargetChanged));
+
+            return DisposableAction.Create(() =>
+            {
+                targetSubscription.Dispose();
+                targetDataContextSubscription?.Dispose();
+            });
         }
 
         return default;

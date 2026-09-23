@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Wiesław Šoltés. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Xaml.Interactivity;
@@ -12,10 +13,10 @@ namespace Avalonia.Xaml.Interactions.Core;
 [RequiresUnreferencedCode("This functionality is not compatible with trimming.")]
 public class ChangePropertyAction : StyledElementAction, IReversibleAction
 {
-    private bool _isApplied;
-    private object? _previousTargetObject;
-    private string? _previousPropertyName;
-    private object? _previousValue;
+    private ReversiblePropertyChange? _reversibleChange;
+    private object? _appliedTarget;
+    private string? _appliedPropertyName;
+    private bool _preserveValueSource;
 
     /// <summary>
     /// Identifies the <seealso cref="PropertyName"/> avalonia property.
@@ -72,6 +73,17 @@ public class ChangePropertyAction : StyledElementAction, IReversibleAction
     /// <returns>True if updating the property value succeeds; else false.</returns>
     public override object Execute(object? sender, object? parameter)
     {
+        return ExecuteCore(sender, preserveValueSource: false);
+    }
+
+    /// <inheritdoc />
+    public object? ExecuteReversibly(object? sender, object? parameter)
+    {
+        return ExecuteCore(sender, preserveValueSource: true);
+    }
+
+    private object ExecuteCore(object? sender, bool preserveValueSource)
+    {
         if (!IsEnabled)
         {
             return false;
@@ -89,23 +101,79 @@ public class ChangePropertyAction : StyledElementAction, IReversibleAction
             return false;
         }
 
-        if (!_isApplied)
+        if (!preserveValueSource)
         {
-            if (PropertyHelper.TryGetPropertyValue(targetObject, propertyName, out var previousValue))
+            return PropertyHelper.UpdatePropertyValue(
+                targetObject,
+                propertyName,
+                Value,
+                preserveValueSource: false);
+        }
+
+        if (_reversibleChange is not null &&
+            (!ReferenceEquals(_appliedTarget, targetObject) ||
+             !string.Equals(_appliedPropertyName, propertyName, StringComparison.Ordinal)))
+        {
+            if (!_reversibleChange.Revert())
             {
-                _previousTargetObject = targetObject;
-                _previousPropertyName = propertyName;
-                _previousValue = previousValue;
+                return false;
             }
+
+            ClearAppliedState();
         }
 
-        var updated = PropertyHelper.UpdatePropertyValue(targetObject, propertyName, Value);
-        if (updated)
+        if (_reversibleChange is null)
         {
-            _isApplied = true;
+            _reversibleChange = new ReversiblePropertyChange(propertyName);
         }
 
-        return updated;
+        var applied = _reversibleChange.Apply(
+            targetObject,
+            Value,
+            TryGetValue,
+            SetValue,
+            SetTemporaryValue,
+            PropertyHelper.IsDirectAvaloniaProperty(targetObject, propertyName));
+        if (applied)
+        {
+            _appliedTarget = targetObject;
+            _appliedPropertyName = propertyName;
+        }
+
+        return applied;
+
+        bool TryGetValue(out object? value)
+        {
+            var found = PropertyHelper.TryGetPropertyValue(
+                targetObject,
+                propertyName,
+                out value,
+                out var capturedPreserveValueSource);
+            if (found)
+            {
+                _preserveValueSource = capturedPreserveValueSource;
+            }
+
+            return found;
+        }
+
+        bool SetValue(object? value)
+        {
+            return PropertyHelper.UpdatePropertyValue(
+                targetObject,
+                propertyName,
+                value,
+                _preserveValueSource);
+        }
+
+        bool SetTemporaryValue(object? value, out IDisposable? reversion)
+        {
+            return PropertyHelper.TrySetTemporaryAvaloniaPropertyValue(
+                targetObject,
+                propertyName,
+                value,
+                out reversion);
+        }
     }
 
     /// <summary>
@@ -116,26 +184,20 @@ public class ChangePropertyAction : StyledElementAction, IReversibleAction
     /// <returns>True if reverting the property value succeeds; else false.</returns>
     public object Revert(object? sender, object? parameter)
     {
-        if (!_isApplied ||
-            _previousTargetObject is null ||
-            _previousPropertyName is null)
+        if (_reversibleChange is null || !_reversibleChange.Revert())
         {
             return false;
         }
 
-        var reverted = PropertyHelper.UpdatePropertyValue(
-            _previousTargetObject,
-            _previousPropertyName,
-            _previousValue);
+        ClearAppliedState();
+        return true;
+    }
 
-        if (reverted)
-        {
-            _isApplied = false;
-            _previousTargetObject = null;
-            _previousPropertyName = null;
-            _previousValue = null;
-        }
-
-        return reverted;
+    private void ClearAppliedState()
+    {
+        _reversibleChange = null;
+        _appliedTarget = null;
+        _appliedPropertyName = null;
+        _preserveValueSource = false;
     }
 }
