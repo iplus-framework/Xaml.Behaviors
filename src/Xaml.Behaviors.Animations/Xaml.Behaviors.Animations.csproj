@@ -14,9 +14,13 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(UseAvaloniaFork)' == 'False'">
     <PackageReference Include="Avalonia" />
   </ItemGroup>
+
+  <!-- iPlus settings and overrides -->
+  <Import Condition="'$(UseAvaloniaFork)' == 'True'" Project="..\..\..\iPlus\build\AvaloniaInclude.props" />
+  <!-- End iPlus settings and overrides -->
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
